@@ -10,7 +10,7 @@ fn fib_twenty() {
 #[test]
 fn big_palindrome() {
     assert!(is_palindrome(1223221));
-    assert!(!is_palindrome(98766789));
+    assert!(!is_palindrome(12345678));
 }
 
 #[test]
