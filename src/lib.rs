@@ -1,51 +1,74 @@
 use std::collections::HashMap;
 
-/// Returns the first `n` Fibonacci numbers.
-pub fn fib(_n: u32) -> Vec<u32> {
-    // TODO: implement
-    unimplemented!()
+pub fn fib(n: u32) -> Vec<u32> {
+    let mut v = Vec::new();
+    if n == 0 {
+        return v;
+    }
+    v.push(0);
+    if n == 1 {
+        return v;
+    }
+    v.push(1);
+    for i in 2..n {
+        let next = v[(i - 1) as usize] + v[(i - 2) as usize];
+        v.push(next);
+    }
+    v
 }
 
-/// Returns true if `n` is a palindrome, false otherwise.
-pub fn is_palindrome(_n: u32) -> bool {
-    // TODO: implement
-    unimplemented!()
+pub fn is_palindrome(n: u32) -> bool {
+    let s = n.to_string();
+    s.chars().rev().collect::<String>() == s
 }
 
-/// Returns the nth largest element in `a`, or None if it does not exist.
-pub fn nthmax(_n: usize, _a: &[i32]) -> Option<i32> {
-    // TODO: implement
-    unimplemented!()
+pub fn nthmax(n: usize, a: &[i32]) -> Option<i32> {
+    if a.is_empty() {
+        return None;
+    }
+    let mut v = a.to_vec();
+    v.sort_by(|a, b| b.cmp(a));
+    v.get(n).cloned()
 }
 
-/// Returns a one-character String containing the most frequent character in `s`.
-pub fn freq(_s: &str) -> String {
-    // TODO: implement
-    unimplemented!()
+pub fn freq(s: &str) -> String {
+    if s.is_empty() {
+        return "".to_string();
+    }
+    let mut map = HashMap::new();
+    for c in s.chars() {
+        *map.entry(c).or_insert(0) += 1;
+    }
+    let mut best = (' ', 0);
+    for (c, count) in map {
+        if count > best.1 {
+            best = (c, count);
+        }
+    }
+    best.0.to_string()
 }
 
-/// Zips two slices into a HashMap, mapping arr1[i] -> arr2[i].
 pub fn zip_hash(
-    _arr1: &[String],
-    _arr2: &[String],
+    arr1: &[String],
+    arr2: &[String],
 ) -> Option<HashMap<String, String>> {
-    // TODO: implement
-    unimplemented!()
+    if arr1.len() != arr2.len() {
+        return None;
+    }
+    let mut m = HashMap::new();
+    for i in 0..arr1.len() {
+        m.insert(arr1[i].clone(), arr2[i].clone());
+    }
+    Some(m)
 }
 
-/// Converts a HashMap into a Vec of (key, value) pairs.
-pub fn hash_to_array(
-    _map: &HashMap<String, String>,
-) -> Vec<(String, String)> {
-    // TODO: implement
-    unimplemented!()
+pub fn hash_to_array(map: &HashMap<String, String>) -> Vec<(String, String)> {
+    let mut v: Vec<(String, String)> =
+        map.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+    v.sort_by(|a, b| a.0.cmp(&b.0));
+    v
 }
 
-// ========================
-// Part 2: PhoneBook
-// ========================
-
-/// A single phone book entry.
 #[derive(Debug, Clone)]
 pub struct PhoneEntry {
     pub name: String,
@@ -53,61 +76,80 @@ pub struct PhoneEntry {
     pub is_listed: bool,
 }
 
-/// PhoneBook holds name/number pairs and whether each is listed.
 #[derive(Debug, Default)]
 pub struct PhoneBook {
-    // You are free to change this internal representation if you want.
     pub entries: Vec<PhoneEntry>,
 }
 
 impl PhoneBook {
-    /// Constructor: create an empty PhoneBook.
     pub fn new() -> Self {
-        // You may also use `Self::default()`
-        PhoneBook {
-            entries: Vec::new(),
+        PhoneBook { entries: Vec::new() }
+    }
+
+    fn valid_number(num: &str) -> bool {
+        let parts: Vec<&str> = num.split('-').collect();
+        if parts.len() != 3 {
+            return false;
         }
+        if parts[0].len() != 3 || parts[1].len() != 3 || parts[2].len() != 4 {
+            return false;
+        }
+        parts.iter().all(|p| p.chars().all(|c| c.is_digit(10)))
     }
 
-    /// Attempts to add a new entry.
-    ///
-    /// Rules:
-    /// 1. If the name already exists, return false.
-    /// 2. If the number is not in the format NNN-NNN-NNNN, return false.
-    /// 3. A number can be unlisted any number of times, but listed at most once.
-    ///    - If the number already exists as listed, adding another listed entry
-    ///      with the same number must return false.
-    ///
-    /// Returns true if the entry was successfully added.
-    pub fn add(
-        &mut self,
-        _name: String,
-        _number: String,
-        _is_listed: bool,
-    ) -> bool {
-        // TODO: implement
-        unimplemented!()
+    pub fn add(&mut self, name: String, number: String, is_listed: bool) -> bool {
+        for e in &self.entries {
+            if e.name == name {
+                return false;
+            }
+        }
+
+        if !Self::valid_number(&number) {
+            return false;
+        }
+
+        if is_listed {
+            for e in &self.entries {
+                if e.number == number && e.is_listed {
+                    return false;
+                }
+            }
+        }
+
+        self.entries.push(PhoneEntry {
+            name,
+            number,
+            is_listed,
+        });
+
+        true
     }
 
-    /// Looks up `name` and returns the number ONLY if the entry is listed.
-    ///
-    /// Otherwise returns None.
-    pub fn lookup(&self, _name: &str) -> Option<String> {
-        // TODO: implement
-        unimplemented!()
+    pub fn lookup(&self, name: &str) -> Option<String> {
+        for e in &self.entries {
+            if e.name == name && e.is_listed {
+                return Some(e.number.clone());
+            }
+        }
+        None
     }
 
-    /// Looks up `num` and returns the associated name ONLY if the entry is listed.
-    ///
-    /// Otherwise returns None.
-    pub fn lookup_by_num(&self, _num: &str) -> Option<String> {
-        // TODO: implement
-        unimplemented!()
+    pub fn lookup_by_num(&self, num: &str) -> Option<String> {
+        for e in &self.entries {
+            if e.number == num && e.is_listed {
+                return Some(e.name.clone());
+            }
+        }
+        None
     }
 
-    /// Returns all names (listed and unlisted) whose numbers begin with `areacode`.
-    pub fn names_by_ac(&self, _areacode: &str) -> Vec<String> {
-        // TODO: implement
-        unimplemented!()
+    pub fn names_by_ac(&self, areacode: &str) -> Vec<String> {
+        let mut v = Vec::new();
+        for e in &self.entries {
+            if e.number.starts_with(areacode) {
+                v.push(e.name.clone());
+            }
+        }
+        v
     }
 }
